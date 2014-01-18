@@ -1,0 +1,11 @@
+Presentation type information:
+	- can be initiated on object creation
+	- may be changes via msg to GUI actor
+	- May be loaded from and saved to layout-file
+
+estetics UI inspiration:
+	Photoshop CS6
+	Nitro
+	Spotify
+	Github
+	sublime text 2
