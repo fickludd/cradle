@@ -50,6 +50,11 @@
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>se.jt</groupId>
+			<artifactId>Params</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<distributionManagement>
