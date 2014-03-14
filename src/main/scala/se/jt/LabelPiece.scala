@@ -7,6 +7,7 @@ import java.awt.BasicStroke
 
 import se.jt.frame.Piece
 import se.jt.frame.Configurable
+import se.jt.frame.Colors
 
 object LabelPiece {
 	val HIGHLIGHT_STROKE = new BasicStroke(2.0f)
@@ -26,11 +27,7 @@ class LabelPiece(val name:String) extends Piece with Configurable {
 	
 	def rFloat = Random.nextFloat / 2 + 0.25f
 	var textColor = Color.BLACK
-	var bgColor = {
-		val r = Random.nextFloat
-		val g = Random.nextFloat
-		new Color(r, g, 1.0f - (r+g)/2)
-	}
+	var bgColor = Colors.random
 	
 	def rerender(g:Graphics2D):Unit = {
 		g.setPaint(bgColor)

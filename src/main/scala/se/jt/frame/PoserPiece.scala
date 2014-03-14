@@ -31,14 +31,25 @@ trait PoserPiece extends Poser with Piece//KvimTreeNode[String, String]
 	}
 	
 	override def renderTree(g:Graphics2D, t:Long):Unit = {
-		if (renderBefore)
+		def doRerender = {
 			rerender(g)
+			isDirty = false
+		}
+		if (renderBefore && isDirty) doRerender
 		for (p <- pieces.values)
 			p match {
 				case pos:Poser => pos.renderTree(g, t)
 				case _ => p.render(g, t)
 			}
-		if (!renderBefore)
-			rerender(g)
+		if (!renderBefore) doRerender
+	}
+	
+	override def cradleTree(c:se.jt.Cradle):Unit = {
+		cradle(c)
+		for (p <- pieces.values) 
+			p match {
+				case pos:Poser => pos.cradleTree(c)
+				case _ => p.cradle(c)
+			}
 	}
 }

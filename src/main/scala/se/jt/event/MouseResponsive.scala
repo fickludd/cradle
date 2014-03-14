@@ -12,11 +12,11 @@ trait MouseResponsive extends Piece {
 		case MouseEnter() =>
 			active = true
 			makeDirty
-			true
+			Eat
 			
 		case MouseLeave() =>
 			active = false
 			makeDirty
-			true
+			Eat
 	}
 }

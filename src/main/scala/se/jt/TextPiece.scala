@@ -23,7 +23,6 @@ class TextPiece(val name:String) extends Scrollable with MouseResponsive {
 	var _text = ""
 	var _typesetted = false
 	var _lines:Seq[String] = Nil
-	var _preferredHeight = -1
 	
 	def text(str:String) = {
 		_text = str
@@ -38,10 +37,6 @@ class TextPiece(val name:String) extends Scrollable with MouseResponsive {
 		new Color(r, g, 1.0f - (r+g)/2)
 	}
 	
-	override def preferredSize = 
-		if (_preferredHeight > 0) Some(w, _preferredHeight)
-		else None
-	
 	def rerender(g:Graphics2D):Unit = {
 		val fm = g.getFontMetrics()
 		val fontHeight = fm.getHeight()
@@ -55,7 +50,7 @@ class TextPiece(val name:String) extends Scrollable with MouseResponsive {
 			_lines = breaks.zip(breaks.tail).map(t => {
 	        	(L.slice(t._1, t._2).collect { case Typeset.Box(wi, text) => text }).mkString(" ")
 	        })
-	        _preferredHeight = _lines.length * fontHeight
+	        ph = _lines.length * fontHeight
 	        _typesetted = true
 		}
 		

@@ -33,6 +33,6 @@ class SimpleListPiece[T](
 			g.fillRect(x, y, w, th)
 		}
 		g.setPaint(Color.WHITE)
-		g.drawString(f(t), x + 5, y + fm.getAscent)
+		g.drawString(f(t), x + 5, y + fm.getAscent + (th-th) / 2)
 	}
 }

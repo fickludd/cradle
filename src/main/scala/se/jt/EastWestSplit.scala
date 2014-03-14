@@ -22,15 +22,9 @@ class EastWestSplit(
 	lazy val pieces = Map(EAST.name -> east, WEST.name -> west)
 	
 	def repose():Unit = {
-		val epw = east.preferredSize match {
-				case Some((pw, ph)) => pw
-				case None 			=> w / 2
-			}
+		val epw = east.preferredSize._1
 		
-		val wpw = west.preferredSize match {
-				case Some((pw, ph)) => pw
-				case None 			=> w / 2
-			}
+		val wpw = west.preferredSize._1
 		
 		val ew = ((epw.toDouble / (epw+wpw)) * w).toInt
 	

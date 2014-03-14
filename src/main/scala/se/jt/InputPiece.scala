@@ -49,7 +49,7 @@ class InputPiece(val name:String) extends Piece with Publisher with MouseRespons
 			caret += 1
 			selPos = caret
 			makeDirty
-			true
+			Eat
 		
 		case BACKSPACE() => 
 			if (sb.nonEmpty) {
@@ -61,7 +61,7 @@ class InputPiece(val name:String) extends Piece with Publisher with MouseRespons
 				}
 				makeDirty
 			}
-			true
+			Eat
 		
 		case ARROW(d, mods) =>
 			import Compass._
@@ -72,13 +72,13 @@ class InputPiece(val name:String) extends Piece with Publisher with MouseRespons
 			}
 			if (!mods.shift) selPos = caret
 			makeDirty
-			true
+			Eat
 		
 		case ENTER() =>
 			/// will focus move upon typing complete?
 			publish(TypingDone(this))
 			println("TYping done!")
-			true
+			Eat
 	}
 	
 	

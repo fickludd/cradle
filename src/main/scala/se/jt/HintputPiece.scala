@@ -5,24 +5,34 @@ import java.awt.Color
 import java.awt.TextArea
 import java.awt.event._
 
+import se.jt.frame.UserInput
+import se.jt.frame.Piece
+import se.jt.frame.PoserPiece
+import se.jt.frame.Compass
+
 import scala.collection.mutable.Stack
 
 object HintputPiece {
-/*
+	
+	def apply(name:String, hintGen:String => Seq[String]) =
+		new HintputPiece(name, hintGen)
+	
+	import UserInput._
+	
 	trait HintMode {
 		def reset:Unit
 		def hintsVisible:Boolean
 		def updateHints:Boolean
-		def onChar(c:KeyBoardCase):Unit
+		def onChar(c:KeyBoardInput):Unit
 	}
 	case class Eager extends HintMode {
 		var _uh = false
 		def updateHints = _uh
 		def reset = _uh = false
 		def hintsVisible = true
-		def onChar(c:KeyBoardCase) = c match {
+		def onChar(c:KeyBoardInput) = c match {
 			case BACKSPACE() => _uh = true
-			case PRINTABLECHAR(c) => _uh = true
+			case PRINTABLECHAR(c, mods) => _uh = true
 			case _ => {}
 		}
 	}
@@ -32,12 +42,12 @@ object HintputPiece {
 		def updateHints = _uh
 		def reset = _uh = false
 		def hintsVisible = _hv
-		def onChar(c:KeyBoardCase) = c match {
+		def onChar(c:KeyBoardInput) = c match {
 			case TAB() => 
 				_uh = true
 				_hv = true
 			case BACKSPACE() => _hv = false
-			case PRINTABLECHAR(c) => _hv = false
+			case PRINTABLECHAR(c, mods) => _hv = false
 			case _ => {}
 				
 		}
@@ -45,25 +55,82 @@ object HintputPiece {
 }
 
 class HintputPiece(
+		name:String,
 		var hintGen:String => Seq[String]
-) extends PoserPiece with CharReader with Publisher {
-	
+) extends InputPiece(name) with PoserPiece {
+
 	import HintputPiece._
+	import UserInput._
+	import Compass._
 	
+	var hintMode:HintMode = Eager()
+	val hintList = SimpleListPiece[String]("hints", t => t)
+	
+	lazy val pieces = Map[String, Piece]()
+	
+	def repose():Unit = {
+		hintList.pos = (x, y+h)
+		hintList.size = (w, -1)
+	}
+	
+	override def cradle(c:se.jt.Cradle) = 
+		c.registerFloat(hintList)
+	
+	captures += {
+		case PRINTABLECHAR(c, mods) =>
+			hintMode.reset
+			hintMode.onChar(PRINTABLECHAR(c, mods))
+			if (hintMode.updateHints) {
+				hintList.items_=(
+					if (sb.isEmpty || !hintMode.hintsVisible)	
+						Nil
+					else hintGen(sb.result)
+				)
+				makeDirty
+			}
+			Eat
+		
+		case BACKSPACE() => 
+			hintMode.reset
+			hintMode.onChar(BACKSPACE())
+			if (hintMode.updateHints) {
+				hintList.items_=(
+					if (sb.isEmpty || !hintMode.hintsVisible)	
+						Nil
+					else hintGen(sb.result)
+				)
+				makeDirty
+			}
+			Eat
+			
+		case ARROW(d, mods) =>
+			d match {
+				case NORTH => hintList.selUp
+				case SOUTH => hintList.selDown
+				case _ => {}
+			}
+			Eat
+		
+		case ENTER() =>
+			if (hintList.hasSelected) {
+				sb.clear
+				sb ++= hintList.getSelected
+			}
+			Eat
+	}
+	/*
 	var text = ""
 	var caret = 0
 	var selPos = 0
 	var hints:Seq[String] = Nil
 	var lastHintRenderSize = 0
 	var hintPos = 0
-	var hintMode:HintMode = Eager()
 	
 	override def select() = {
 		selected = true
 		makeDirty
 	}
 	
-	val hintList = new SimpleListPiece[String](t => t)
 	
 	def repose():Unit = {
 		hintList.pos = (x+5, y+h-2)

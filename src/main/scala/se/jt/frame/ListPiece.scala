@@ -5,12 +5,13 @@ import java.awt.Color
 
 trait ListPiece[T] extends Scrollable {
 	
+	ph = 0
 	protected var selPos = 0
 	var rowHeight = 20
 	var _items:Seq[T] = Nil
 	def items_=(items:Seq[T]):Unit = {
 		_items 	= items
-		h 		= rowHeight * items.length
+		ph 		= rowHeight * items.length
 		selPos 	= 0
 		makeDirty
 	}
@@ -34,7 +35,7 @@ trait ListPiece[T] extends Scrollable {
 	def itemHeight(t:T, g:Graphics2D):Int
 	def renderItem(t:T, g:Graphics2D, x:Int, y:Int, selected:Boolean, odd:Boolean):Unit
 	
-	override def preferredSize = Some(w, _items.length * rowHeight)
+	//override def preferredSize = Some(w, _items.length * rowHeight)
 	
 	def rerender(g:Graphics2D):Unit = {
 		val fm = g.getFontMetrics()

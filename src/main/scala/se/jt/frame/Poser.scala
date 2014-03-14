@@ -19,7 +19,9 @@ trait Poser {
 			repose()
 			needRepose = false
 		}
-		(pieces.values.collect { case p:Poser => p }).foreach(_.posePieces) 
+		(pieces.values.collect { case p:Poser => p }).foreach(
+				_.posePieces()
+			) 
 	}
 	/*def setPieces(ps:Seq[Piece]) = {
 		pieces.clear
@@ -39,20 +41,22 @@ trait Poser {
 				case _ => p.render(g, t)
 			}
 	
+	def cradleTree(c:se.jt.Cradle):Unit = 
+		for (p <- pieces.values) 
+			p match {
+				case pos:Poser => pos.cradleTree(c)
+				case _ => p.cradle(c)
+			}
+	
 	def getPathAt(x:Int, y:Int):Path = {
-		pieces.flatMap(t => {
+		pieces.find(_._2.wraps(x, y)) map (t => {
 			val (k, p) = t
 			p match {
 				case pp:PoserPiece =>
-					(
-							if (pp.wraps(x, y)) List(k)
-							else Nil
-					) ++ pp.getPathAt(x, y)
-				case p:Piece => 
-					if (p.wraps(x, y)) List(k)
-					else Nil
-			}		
-		}).toSeq
+					List(k) ++ pp.getPathAt(x, y)
+				case p:Piece => List(k)
+			}
+		}) getOrElse Nil
 	}
 	
 	def getTouchingPieces(r:Rect):Seq[Piece] = {

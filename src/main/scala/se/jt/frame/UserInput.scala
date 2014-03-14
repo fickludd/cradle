@@ -24,7 +24,12 @@ object UserInput {
 	case class TAB extends KeyBoardInput
 	case class PRINTABLECHAR(c:Char, mods:Mods) extends KeyBoardInput
 	case class ARROW(dir:Compass.Dir, mods:Mods) extends KeyBoardInput
-
+	
+	class InputResponse
+	val Ignore = new InputResponse
+	val Eat = new InputResponse
+	val Lock = new InputResponse
+	val UnLock = new InputResponse
 }
 
 

@@ -21,14 +21,8 @@ trait Scrollable extends Piece {
 		makeDirty
 	}
 	def setViewPortPos(vx:Int, vy:Int):Unit = {
-		if (preferredSize.isDefined) {
-			val ps = preferredSize.get
-			this.vx = math.max(0, math.min(ps._1 - vw, vx))
-			this.vy = math.max(0, math.min(ps._2 - vh, vy))
-		} else {
-			this.vx = vx
-			this.vy = vy
-		}
+		this.vx = math.max(0, math.min(pw - vw, vx))
+		this.vy = math.max(0, math.min(ph - vh, vy))
 		makeDirty
 	}
 }

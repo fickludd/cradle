@@ -22,15 +22,8 @@ class NorthSouthSplit(
 	lazy val pieces = Map(NORTH.name -> north, SOUTH.name -> south)
 	
 	def repose():Unit = {
-		val nph = north.preferredSize match {
-				case Some((pw, ph)) => ph
-				case None 			=> h / 2
-			}
-		
-		val sph = south.preferredSize match {
-				case Some((pw, ph)) => ph
-				case None 			=> h / 2
-			}
+		val nph = north.preferredSize._2
+		val sph = south.preferredSize._2
 		
 		val nh = ((nph.toDouble / (nph+sph)) * h).toInt
 	

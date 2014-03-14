@@ -42,10 +42,7 @@ class BorderPiece(
 		val nh = if (ns.exists(children.contains(_))) {
 			ns.filter(children.contains(_)).map(dir => {
 				val p = children(dir)
-				p.preferredSize match {
-					case Some((pw, ph)) => ph
-					case None 			=> h / 10
-				}
+				p.preferredSize._2
 			}).max
 		} else 0
 		
@@ -53,10 +50,7 @@ class BorderPiece(
 		val sh = if (ss.exists(children.contains(_))) {
 			ss.filter(children.contains(_)).map(dir => {
 				val p = children(dir)
-				p.preferredSize match {
-					case Some((pw, ph)) => ph
-					case None 			=> h / 10
-				}
+				p.preferredSize._2
 			}).max
 		} else 0
 		
@@ -64,10 +58,7 @@ class BorderPiece(
 		val ww = if (ws.exists(children.contains(_))) {
 			ws.filter(children.contains(_)).map(dir => {
 				val p = children(dir)
-				p.preferredSize match {
-					case Some((pw, ph)) => pw
-					case None 			=> w / 10
-				}
+				p.preferredSize._1
 			}).max
 		} else 0
 		
@@ -75,10 +66,7 @@ class BorderPiece(
 		val ew = if (es.exists(children.contains(_))) {
 			es.filter(children.contains(_)).map(dir => {
 				val p = children(dir)
-				p.preferredSize match {
-					case Some((pw, ph)) => pw
-					case None 			=> w / 10
-				}
+				p.preferredSize._1
 			}).max
 		} else 0
 		
