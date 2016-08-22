@@ -56,6 +56,15 @@ object Colors {
 		}
 	}
 	
+	def dist(c1:Color, c2:Color):Double = {
+		val maxDist = 1.7320508075688772
+		val f1 = new Array[Float](3)
+		val f2 = new Array[Float](3)
+		c1.getColorComponents(f1)
+		c2.getColorComponents(f2)
+		(maxDist - math.sqrt(f1(0)*f2(0)+f1(1)*f2(1)+f1(2)*f2(2))) / maxDist	
+	}
+	
 	def random = {
 		val r = Random.nextFloat
 		val g = Random.nextFloat

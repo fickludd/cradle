@@ -2,9 +2,10 @@ package se.jt
 
 import java.awt.Graphics2D
 import se.jt.frame.Piece
-import se.jt.frame.PoserPiece
+import se.jt.frame.PurePoserPiece
 
 import se.jt.frame.Compass
+import se.jt.frame.Configurable
 
 object BorderPiece {
 	
@@ -16,27 +17,13 @@ object BorderPiece {
 class BorderPiece(
 		val name:String, 
 		val children:Map[Compass.Dir, Piece]
-) extends PoserPiece {
+) extends PurePoserPiece with Configurable {
 	
 	import Compass._
 	
-	def pieces = children.map(t => (t._1.name, t._2))
-	/*
-	def border(p:Piece) = {
-		pieces += p
-		makeDirty
-		Some(p)
-	}*/
+	def pieces = children.map(t => (t._2.name, t._2))
 	
-	/*
-	def north_=(p:Piece) 	= new BorderPiece(name, pieces + (NORTH -> p))
-	def south_=(p:Piece) 	= new BorderPiece(name, pieces + (SOUTH -> p))
-	def west_=(p:Piece) 	= new BorderPiece(name, pieces + (WEST -> p))
-	def east_=(p:Piece) 	= new BorderPiece(name, pieces + (EAST -> p))
-	def center_=(p:Piece)	= new BorderPiece(name, pieces + (CENTER -> p))
-	*/
-	
-	def repose():Unit = {
+	def framedRepose(x:Int, y:Int, w:Int, h:Int):Unit = {
 		
 		val ns = List(NORTH_WEST, NORTH, NORTH_EAST)
 		val nh = if (ns.exists(children.contains(_))) {
@@ -93,6 +80,4 @@ class BorderPiece(
 		
 		position(CENTER, x+ww, y+nh, w-ww-ew, h-nh-sh)
 	}
-	
-	def rerender(g:Graphics2D):Unit = {}
 }

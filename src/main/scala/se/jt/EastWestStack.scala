@@ -5,8 +5,9 @@ import java.awt.Graphics2D
 import java.awt.Adjustable._
 
 import scala.util.Random
-import se.jt.frame.PoserPiece
+import se.jt.frame.PurePoserPiece
 import se.jt.frame.Piece
+import se.jt.frame.Configurable
 
 object EastWestStack {
 	def apply(name:String, children:Piece*) =
@@ -16,11 +17,11 @@ object EastWestStack {
 class EastWestStack(
 		val name:String, 
 		val children:Seq[Piece]
-) extends PoserPiece {
+) extends PurePoserPiece with Configurable {
 
 	lazy val pieces = children.map(t => (t.name, t)).toMap
 	
-	def repose():Unit = {
+	def framedRepose(x:Int, y:Int, w:Int, h:Int):Unit = {
 		val dw = w / pieces.size
 		var i = 0
 		for (p <- pieces.values) {
@@ -29,7 +30,4 @@ class EastWestStack(
 			i+=1
 		}
 	}
-	
-	
-	def rerender(g:Graphics2D):Unit = {}
 }

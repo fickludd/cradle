@@ -1,0 +1,47 @@
+# this is a comment
+
+main
+	bgColor = 0xAAAAAA
+	padding = 8px
+
+main.top.guide.height = 80px
+
+main.top.guide.left
+	bgColor = 0x88AAFF
+	color = 0x0
+	textAling = left
+	padding = 8px
+	marginEast = 4px
+	typesetter = manual
+
+main.top.guide.right
+	bgColor = 0x88AAFF
+	color = 0x0
+	textAling = left
+	padding = 8px
+	marginWest = 4px
+	typesetter = manual
+
+main.top.commandline
+	bgColor = 0x88AAFF
+	color = 0x0
+	borderColor = 0x7777FF
+	border = 1px
+	marginNorth = 2px
+	marginSouth = 4px
+	height = 24px
+
+main.text
+	borderColor = 0x0
+	border = 1px
+	bgColor = 0xFFFFbb
+	textColor = 0x0
+	padding = 4px
+	font = Monospaced
+
+main.lineNumbers
+	bgColor = 0x77FFBB
+	marginWest = 24px
+	marginEast = 2px
+	width = 32px
+

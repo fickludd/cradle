@@ -2,19 +2,33 @@ package se.jt
 
 import java.awt.Frame
 import java.awt.Graphics2D
+import java.awt.Color
 import java.awt.image.BufferedImage
+import java.awt.Font
+import java.io.InputStream
 
 import se.jt.frame.Piece
 import se.jt.frame.PoserPiece
-import se.jt.frame.UserInput
+import se.jt.input.UserInput
 import se.jt.frame.TreePath
 import se.jt.frame.Geom.Rect
+import se.jt.frame.Icon
+
+import se.jt.event.Publisher
+import se.jt.event.Reactor
+import se.jt.event.PreferredSizeChanged
+import se.jt.event.ReloadStyle
 
 import scala.collection.mutable.DoubleLinkedList
-
+import scala.util.{Try, Failure, Success}
 
 object Cradle {
 	
+	trait PiecePath
+    case class InTree(path:TreePath.Path) extends PiecePath
+    case class OverTree(node:DoubleLinkedList[Piece]) extends PiecePath
+    
+    
 	def main(args:Array[String]):Unit = {
 		
 		import se.jt.frame.Compass._
@@ -48,11 +62,11 @@ object Cradle {
 				BorderPiece("root",
 						NORTH -> HintputPiece("Hintput", str => List(str+"1", str+"2", str+"3")),
 						NORTH_WEST -> LabelPiece("NorthWest"),
-						SOUTH_EAST -> LabelPiece("SouthEAST"),
+						SOUTH_EAST -> ProgressBinPiece("progress", ProgressBinPiece.Passive()),//ProgressBinPiece.Loading(0.7)),
 						SOUTH -> EastWestStack("EW-stack",
-								LabelPiece("label1"), 
+								ButtonPiece("label1", Icon.file("src/test/resources/test_icon.png")), 
 								InputPiece("input"), 
-								new ScrollPiece("scrollp", TextPiece("text", """Dear all, 
+								ReadPiece("text", """Dear all, 
 Monday January 27th at 15.00 in Bioforum, Sara Vikstrom is presenting her advanced course work entitled 
 
 ÓOptimizing the scFv concentration coupled to magnetic beads in the AFFIRM platformÓ
@@ -61,8 +75,8 @@ Supervisors: Sofia Waldemarson, Anna Sall, Helena Persson
 Examiner: Mats Ohlin
 
 All very welcome!
-/Sofia"""))),
-						WEST -> ButtonPiece("West"),
+/Sofia""")),
+						WEST -> ToggleButtonPiece("West"),
 						EAST -> list,
 						CENTER -> TabPiece("tabs!",
 								wrapView,
@@ -123,28 +137,39 @@ All very welcome!
             
         }
     }
+	
+	class FloatLayout extends Reactor {
+		
+		reactions += {
+			case PreferredSizeChanged(float) => float.size = (float.pw, float.ph) 
+		}
+	}
 }
 
 
 class Cradle(
 		val name:String,
 		val root:PoserPiece
-) extends Frame {
+) extends Frame with Publisher {
+	
+	import Cradle._
+	
+	lazy val awtFrame = this //new Frame
 	
 	val initWidth = 800
 	val initHeight = 600
 	
     var floatLayer = new DoubleLinkedList[(Piece, Rect)]
-	def registerFloat(p:Piece) = 
+	val floatLayout = new FloatLayout
+	def registerFloat(p:Piece) = {
+		p.size = (p.pw, p.ph)
+		floatLayout.listenTo(p)
 		floatLayer = floatLayer :+ p -> p.rect
+	}
 	
 	root.cradleTree(this)
 	
     var backBuffer:BufferedImage = null
-    
-    trait PiecePath
-    case class InTree(path:TreePath.Path) extends PiecePath
-    case class OverTree(node:DoubleLinkedList[Piece]) extends PiecePath
     
     var highlightLock = false
     var focus:Option[PiecePath] = None
@@ -153,28 +178,55 @@ class Cradle(
     var userInput:UserInput = null
     
     def initialize() = {
-    	setTitle(name)
-        setSize(initWidth, initHeight)
-        setVisible(true)
+    	awtFrame.setTitle(name)
+        awtFrame.setSize(initWidth, initHeight)
+        awtFrame.setVisible(true)
        
-        val insets = getInsets()
-        setSize(insets.left + initWidth + insets.right,
+        val insets = awtFrame.getInsets()
+        awtFrame.setSize(insets.left + initWidth + insets.right,
                         insets.top + initHeight + insets.bottom)
-       
-        root.size = (initWidth, initHeight)
-        setResizable(false)
+                        
+    	
+        setupSize(initWidth, initHeight)
         
-        userInput = new UserInput(this)
+        userInput = new UserInput(awtFrame)
         
         import java.awt.event._
-        addWindowListener(new WindowAdapter(){
+        awtFrame.addWindowListener(new WindowAdapter() {
         	override def windowClosing(we:WindowEvent) = {
         		System.exit(0)
         	}
 		})
-    	
-        backBuffer = new BufferedImage(initWidth, initHeight, BufferedImage.TYPE_INT_RGB)
+		awtFrame.addComponentListener(new ComponentAdapter() {
+		    override def componentResized(e:ComponentEvent) {
+		        val size = awtFrame.getSize
+		    	val insets = awtFrame.getInsets
+		        setupSize(
+		        		size.getWidth.toInt - insets.left - insets.right, 
+		        		size.getHeight.toInt - insets.top - insets.bottom)
+		    }
+		});
     }
+	
+	
+	def setupSize(w:Int, h:Int) = {
+		root.size = (w, h)
+		backBuffer = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+	}
+	
+		
+	def getPiece(path:PiecePath):Try[Piece] = {
+		path match {
+			case InTree(tp) => 
+				tp match {
+					case Nil => Failure(new Exception("Empty path"))
+					case x::xs => 
+						if (x != root.name) Failure(new Exception("Non matching roots"))
+						else Try(root(xs))
+				}
+			case OverTree(node) => Try(node.head)
+		}
+	}
 	
 	
 	def setFocus(newPath:TreePath.Path) = {
@@ -214,6 +266,7 @@ class Cradle(
 	
 	def pushInput(path:TreePath.Path, input:UserInput.Base):Unit = {
 		import UserInput._
+		
 		val ps = root.realize(path)
 		for (p <- ps) {
 			val resps = p.captures(input)
@@ -231,6 +284,11 @@ class Cradle(
 	
 	def handleUserInput(input:UserInput.Base):Unit = {
 		import UserInput._
+		
+		input match {
+			case PRINTABLECHAR('Ã', mods) => publish(ReloadStyle())
+			case _ => {}
+		}
 		
 		if (!highlightLock)
 			input match {
@@ -262,14 +320,14 @@ class Cradle(
 	
 	
     def draw() = {              
-        val g = getGraphics()
+        val g = awtFrame.getGraphics()
        
         val bbg = backBuffer.getGraphics().asInstanceOf[Graphics2D]
         
         floatLayer = 
         	for ((p, rect) <- floatLayer) yield {
 	        	val nrect = p.rect
-	        	if (nrect != rect) {
+	        	if (nrect != rect && rect.w > 0 && rect.h > 0) {
 	        		for (under <- root.getTouchingPieces(rect))
 	        			under.makeDirty
 	        	}
@@ -279,10 +337,10 @@ class Cradle(
         
         val t = System.currentTimeMillis()
         
-        val pieces = root.renderTree(bbg, t)
+        val pieces = root.renderTree(bbg, Color.BLACK, t)
         
-        for (f <- floatLayer) f._1.render(bbg, t)
+        for (f <- floatLayer) f._1.render(bbg, Color.BLACK, t)
         
-        g.drawImage(backBuffer, insets.left, insets.top, this)
+        g.drawImage(backBuffer, awtFrame.insets.left, awtFrame.insets.top, awtFrame)
     }
 }

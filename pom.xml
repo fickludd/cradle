@@ -53,7 +53,12 @@
 		<dependency>
 			<groupId>se.jt</groupId>
 			<artifactId>Params</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.10</artifactId>
+			<version>2.3.4</version>
 		</dependency>
 	</dependencies>
 

@@ -1,0 +1,14 @@
+# this is a comment
+
+grid
+	bgColor = 0xCCCCCC
+	margin = 2px
+
+grid.display
+	bgColor = 0xFFFFFF
+	halign = east
+	margin = 5px
+	padding = 5px
+	
+grid.facProgress
+	margin = 5px

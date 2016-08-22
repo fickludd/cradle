@@ -3,12 +3,13 @@ package se.jt
 import java.awt.Graphics2D
 import java.awt.Color
 import se.jt.frame.ListPiece
+import se.jt.frame.Configurable
 
 class TablePiece(
 		val name:String, 
 		data:Array[Array[Any]], 
 		var columns:Seq[String]
-) extends ListPiece[Array[Any]] {
+) extends ListPiece[Array[Any]] with Configurable {
 	
 	items_=(data)
 	
@@ -39,7 +40,7 @@ class TablePiece(
 		g.drawString(c, x + 5, y + fm.getAscent)
 	}
 	
-	override def rerender(g:Graphics2D):Unit = {
+	override def rerender(g:Graphics2D, x:Int, y:Int, w:Int, h:Int):Unit = {
 		val fm = g.getFontMetrics()
 		if (colWidths.isEmpty) {
 			val headWidths = columns.map(fm.stringWidth(_) + 20)

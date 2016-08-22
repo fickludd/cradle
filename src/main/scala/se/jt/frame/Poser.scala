@@ -1,10 +1,8 @@
 package se.jt.frame
 
 import java.awt.Graphics2D
+import java.awt.Color
 import scala.collection.mutable.ArrayBuffer
-
-
-
 
 trait Poser {
 
@@ -34,11 +32,11 @@ trait Poser {
 		case k::ks => pieces(k)(ks)
 	}
 	
-	def renderTree(g:Graphics2D, t:Long):Unit = 
+	def renderTree(g:Graphics2D, underlyingColor:Color, t:Long):Unit = 
 		for (p <- pieces.values) 
 			p match {
-				case pos:Poser => pos.renderTree(g, t)
-				case _ => p.render(g, t)
+				case pos:Poser => pos.renderTree(g, underlyingColor, t)
+				case _ => p.render(g, underlyingColor, t)
 			}
 	
 	def cradleTree(c:se.jt.Cradle):Unit = 

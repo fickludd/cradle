@@ -4,7 +4,8 @@ import java.awt.Color
 import java.awt.Graphics2D
 
 import se.jt.frame.Piece
-import se.jt.frame.PoserPiece
+import se.jt.frame.PurePoserPiece
+import se.jt.frame.Configurable
 
 object WrapViewPiece {
 	def apply(name:String) = new WrapViewPiece(name)
@@ -12,7 +13,7 @@ object WrapViewPiece {
 
 class WrapViewPiece(
 		val name:String
-) extends PoserPiece {
+) extends PurePoserPiece with Configurable {
 	
 	renderBefore = true
 	
@@ -24,7 +25,7 @@ class WrapViewPiece(
 	
 	def pieces = _items.map(p => p.name -> p).toMap
 	
-	def repose():Unit = {
+	def framedRepose(x:Int, y:Int, w:Int, h:Int):Unit = {
 		def layoutCol(colx:Int, col:Seq[Piece]):Int = {
 			var ty = 0
 			for (p <- col) {
@@ -46,11 +47,7 @@ class WrapViewPiece(
 					}
 			}
 		}
+		_items.foreach(p => p.size = (p.pw, p.ph))
 		layout(0, _items, Nil)
-	}
-	
-	def rerender(g:Graphics2D):Unit = {
-		g.setColor(Color.GRAY)
-		g.fillRect(x, y, w, h)
 	}
 }

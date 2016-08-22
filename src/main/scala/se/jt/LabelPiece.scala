@@ -16,35 +16,30 @@ object LabelPiece {
 	def apply(name:String) = new LabelPiece(name)
 }
 
-class LabelPiece(val name:String) extends Piece with Configurable {
+class LabelPiece(val name:String) extends Piece with Configurable.Text {
 	
 	import LabelPiece._
-
-	configs += (
-		("bgColor", x => bgColor = new Color(x.toInt)),
-		("textColor", x => textColor = new Color(x.toInt))
-	)
+	import se.jt.frame.Compass._
 	
-	def rFloat = Random.nextFloat / 2 + 0.25f
-	var textColor = Color.BLACK
-	var bgColor = Colors.random
+	_bgColor = Colors.random
 	
-	def rerender(g:Graphics2D):Unit = {
-		g.setPaint(bgColor)
-		g.fillRect(x, y, w, h)
+	def rerender(g:Graphics2D, x:Int, y:Int, w:Int, h:Int):Unit = {
+		val fm = g.getFontMetrics()
+		val tw = fm.charsWidth(name.toCharArray, 0, name.length)
+		val th = fm.getHeight()
 		
-		/*
-		if (selected) {
-			g.setPaint(Color.WHITE)
-			g.drawRect(x,y,w-1,h-1)
-		} else if (highlighted) {
-			g.setPaint(Color.RED)
-			g.setStroke(HIGHLIGHT_STROKE)
-			g.drawRect(x,y,w-1,h-1)
-			g.setStroke(NORMAL_STROKE)
+		val cx = eastWestAlign match {
+			case WEST => x + kerning
+			case CENTER => x + w/2 - tw/2
+			case EAST => x + w - kerning - tw
 		}
-		*/
-		g.setPaint(Color.BLACK)
-		g.drawString(name, x + 5, y + 10 + h/2)
+		val cy = northSouthAlign match {
+			case NORTH => y + kerning
+			case CENTER => y + h/2 + fm.getAscent - th / 2
+			case SOUTH => y + h - kerning - th
+		}
+		
+		g.setPaint(textColor)
+		g.drawString(name, cx, cy)
 	}
 }

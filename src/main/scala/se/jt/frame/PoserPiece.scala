@@ -1,5 +1,6 @@
 package se.jt.frame
 
+import java.awt.Color
 import java.awt.Graphics2D
 
 trait PoserPiece extends Poser with Piece//KvimTreeNode[String, String]  
@@ -12,6 +13,13 @@ trait PoserPiece extends Poser with Piece//KvimTreeNode[String, String]
 		for (p <- ps) pieces += p
 		makeDirty
 	}*/
+	
+	def framedRepose(x:Int, y:Int, w:Int, h:Int)
+	def repose():Unit = {
+		val cr = contentRect
+		framedRepose(cr.x, cr.y, cr.w, cr.h)
+	}
+		
 	
 	override def apply(path:TreePath.Path):Piece = 
 		path match {
@@ -30,18 +38,14 @@ trait PoserPiece extends Poser with Piece//KvimTreeNode[String, String]
 		needRepose = true
 	}
 	
-	override def renderTree(g:Graphics2D, t:Long):Unit = {
-		def doRerender = {
-			rerender(g)
-			isDirty = false
-		}
-		if (renderBefore && isDirty) doRerender
+	override def renderTree(g:Graphics2D, underlyingColor:Color, t:Long):Unit = {
+		if (renderBefore) render(g, bgColor.getOrElse(underlyingColor), t)
 		for (p <- pieces.values)
 			p match {
-				case pos:Poser => pos.renderTree(g, t)
-				case _ => p.render(g, t)
+				case pos:Poser => pos.renderTree(g, bgColor.getOrElse(underlyingColor), t)
+				case _ => p.render(g, bgColor.getOrElse(underlyingColor), t)
 			}
-		if (!renderBefore) doRerender
+		if (!renderBefore) render(g, bgColor.getOrElse(underlyingColor), t)
 	}
 	
 	override def cradleTree(c:se.jt.Cradle):Unit = {

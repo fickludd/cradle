@@ -1,5 +1,6 @@
 package se.jt.text
 
+import java.awt.FontMetrics
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -9,6 +10,49 @@ import scala.collection.mutable.ArrayBuffer
 
 object Typeset {
 
+	
+	
+	trait Typesetting {
+		def raw:String
+		def lines:Seq[String]
+		def h:Int
+		def withWidth(newWidth:Int):Typesetting
+		def withFontMetrics(newFontMetrics:FontMetrics):Typesetting
+	}
+	case class Manual(
+			raw:String, fontMetrics:FontMetrics, width:Int
+	) extends Typesetting {
+		val lines = raw.split("\n").toSeq
+		val h = lines.length * fontMetrics.getHeight
+		def withWidth(newWidth:Int):Typesetting = this
+		def withFontMetrics(newFontMetrics:FontMetrics):Typesetting = this
+	}
+	case class TexTypesetting(
+			raw:String, fontMetrics:FontMetrics, width:Int
+	) extends Typesetting {
+		lazy val lines = {
+			val L = new Typeset.NodeList
+			val testW = fontMetrics.charsWidth("hi".toArray, 0, 2)
+			L.addParagraph(raw, word => fontMetrics.charsWidth(word.toArray, 0, word.length))
+			val breaks = L.computeBreakpoints( List[Int]().padTo(200, width),5, 20)
+			if (breaks.isEmpty)
+				List(raw)
+			else
+				breaks.zip(breaks.tail).map(t => {
+					(L.slice(t._1, t._2).collect { case Typeset.Box(wi, text) => text }).mkString(" ")
+		        })
+		}
+		
+		lazy val h = lines.length * fontMetrics.getHeight()
+		
+		def withWidth(newWidth:Int) = 
+			TexTypesetting(raw, fontMetrics, newWidth)
+		def withFontMetrics(newFontMetrics:FontMetrics) = 
+			TexTypesetting(raw, newFontMetrics, width)
+	}
+	
+	
+	
 	val INFINITY = 1000
 	
 	class KPObject {

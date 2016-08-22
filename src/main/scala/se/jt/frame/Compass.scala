@@ -16,4 +16,19 @@ object Compass {
 	val SOUTH_WEST = new Dir("south-west")
 	
 	val CENTER = new Dir("center")
+	
+	def dir(str:String) =
+		str match {
+			case "north" => NORTH
+			case "south" => SOUTH
+			case "east" => EAST
+			case "west" => WEST
+			
+			case "north-east" => NORTH_EAST
+			case "north-west" => NORTH_WEST
+			case "south-east" => SOUTH_EAST
+			case "south-west" => SOUTH_WEST
+			
+			case "center" => CENTER
+		}
 }

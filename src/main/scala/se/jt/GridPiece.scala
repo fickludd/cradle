@@ -2,21 +2,28 @@ package se.jt
 
 import se.jt.frame.ScrollablePoser
 import se.jt.frame.Piece
+import se.jt.frame.Configurable
+
 import java.awt.Graphics2D
+import java.awt.Color
 
 object GridPiece {
 	
 	def apply(name:String, rows:Seq[Piece]*) = new GridPiece(name, rows)
 }
 
-class GridPiece(val name:String, val rows:Seq[Seq[Piece]]) extends ScrollablePoser {
+class GridPiece(
+		val name:String, 
+		val rows:Seq[Seq[Piece]]
+) extends ScrollablePoser {
 
 	var rowMinHeight = 30
-	ph = rows.length * rowMinHeight
+	override def defaultPH = rows.length * rowMinHeight
 	
 	lazy val pieces = rows.flatten.map(p => p.name -> p).toMap
 	
-	def rerender(g:Graphics2D):Unit = {}
+	val bgColor = None
+	val borderColor = None
 	/*
 	override def renderTree(g:Graphics2D, t:Long):Unit = {
 		if (renderBefore)
@@ -32,7 +39,7 @@ class GridPiece(val name:String, val rows:Seq[Seq[Piece]]) extends ScrollablePos
 			rerender(g)
 	}
 	*/
-	def repose() = {
+	def framedRepose(x:Int, y:Int, w:Int, h:Int) = {
 		val nCols = rows.map(_.length).max
 		
 		val (dw, dh) = visibleSize

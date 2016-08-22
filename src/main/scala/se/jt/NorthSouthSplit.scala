@@ -4,6 +4,7 @@ import java.awt.Graphics2D
 
 import se.jt.frame.Piece
 import se.jt.frame.PoserPiece
+import se.jt.frame.Configurable
 
 object NorthSouthSplit {
 	def apply(name:String, n:Piece, s:Piece) =
@@ -15,13 +16,13 @@ class NorthSouthSplit(
 		val name:String,
 		val north:Piece,
 		val south:Piece
-) extends PoserPiece {
+) extends PoserPiece with Configurable {
 
 	import se.jt.frame.Compass._
 	
-	lazy val pieces = Map(NORTH.name -> north, SOUTH.name -> south)
+	lazy val pieces = Map(north.name -> north, south.name -> south)
 	
-	def repose():Unit = {
+	def framedRepose(x:Int, y:Int, w:Int, h:Int):Unit = {
 		val nph = north.preferredSize._2
 		val sph = south.preferredSize._2
 		
@@ -34,5 +35,5 @@ class NorthSouthSplit(
 		south.size = (w, h - nh)
 	}
 	
-	def rerender(g:Graphics2D):Unit = {}
+	def rerender(g:Graphics2D, x:Int, y:Int, w:Int, h:Int):Unit = {}
 }

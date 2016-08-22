@@ -4,10 +4,11 @@ import java.awt.Color
 import java.awt.Graphics2D
 
 import se.jt.frame.Piece
-import se.jt.frame.UserInput
+import se.jt.input.UserInput
 import se.jt.frame.Colors
 import se.jt.frame.Configurable
-import se.jt.event.MouseResponsive
+import se.jt.frame.Icon
+import se.jt.input.MouseResponsive
 import se.jt.event.Publisher
 import se.jt.event.InputDone
 
@@ -16,8 +17,22 @@ import se.jt.frame.Animation
 object ButtonPiece {
 	
 	def apply(name:String) = new ButtonPiece(name)
+	def apply(name:String, icon:Icon) = {
+		val b = new ButtonPiece(name)
+		b.icon_=(icon)
+		b
+	}
 	def apply(name:String, onClick:() => Unit) = {
 		val b = new ButtonPiece(name)
+		b.reactions += {
+			case InputDone(b) =>
+				onClick()
+		}
+		b
+	}
+	def apply(name:String, icon:Icon, onClick:() => Unit) = {
+		val b = new ButtonPiece(name)
+		b.icon_=(icon)
 		b.reactions += {
 			case InputDone(b) =>
 				onClick()
@@ -34,24 +49,32 @@ object ButtonPiece {
 
 
 
-class ButtonPiece(val name:String) extends Piece with Publisher with MouseResponsive with Configurable {
+class ButtonPiece(val name:String) extends Piece 
+	with Publisher with MouseResponsive with Configurable.Text {
 	
 	import LabelPiece._
 	import UserInput._
 	import ButtonPiece._
+	import se.jt.frame.Compass._
 
 	configs += (
-		("bgColor", x => bgColor = new Color(x.toInt)),
-		("textColor", x => textColor = new Color(x.toInt)),
-		("pressedColor", x => pressedColor = new Color(x.toInt)),
-		("clickColor", x => clickedColor = new Color(x.toInt))
+		("pressedColor", x => pressedColor = Some(new Color(Configurable.parseInt(x)))),
+		("clickColor", x => clickedColor = Some(new Color(Configurable.parseInt(x))))
 	)
 	
-	var bgColor = Color.GRAY
-	var activeColor:Color = Colors.lighter(bgColor)
-	var textColor = Color.BLACK
-	var pressedColor = Color.DARK_GRAY
-	var clickedColor = Color.BLUE
+	var activeColor:Option[Color] = None
+	var pressedColor:Option[Color] = None// = Color.DARK_GRAY
+	var clickedColor:Option[Color] = None// = Color.BLUE
+	
+	protected var _icon:Option[Icon] = None
+	def icon_=(i:Icon) = {
+		_icon = Some(i)
+		makeDirty
+	}
+	def clearIcon = {
+		_icon = None
+		makeDirty
+	}
 	
 	protected var state:State = Up()
 	def resetState = 
@@ -62,14 +85,14 @@ class ButtonPiece(val name:String) extends Piece with Publisher with MouseRespon
 				state = Up()
 		}
 	
-	
+	/*
 	class ClickAnimation extends Animation {
 		val startTime = System.currentTimeMillis
 		val duration = 300L
 		
 		def animate(p:Piece, g:Graphics2D, t:Long) = {
 			val k = math.min(t.toDouble, duration) / duration
-			g.setPaint(Colors.interpolate(clickedColor, bgColor, k.toFloat))
+			g.setPaint(Colors.interpolate(clickedColor, bgColor.get, k.toFloat))
 			g.fillRect(x, y, w, h)
 			
 			val fm = g.getFontMetrics()
@@ -80,7 +103,7 @@ class ButtonPiece(val name:String) extends Piece with Publisher with MouseRespon
 		
 		def hasEnded(r:Long) = r > duration
 	}
-	
+	*/
 	
 	captures += {
 		case MouseClick(x, y) if wraps(x, y) =>
@@ -115,22 +138,24 @@ class ButtonPiece(val name:String) extends Piece with Publisher with MouseRespon
 			*/
 	}
 	
-	def rerender(g:Graphics2D):Unit = {
+	def rerender(g:Graphics2D, x:Int, y:Int, w:Int, h:Int):Unit = {
 		
 		val c = 
 			state match {
-				case Up() => bgColor
-				case Active() => activeColor
-				case Pressed() => pressedColor
+				case Up() => bgColor.get
+				case Active() => 
+					activeColor.getOrElse(Colors.hsv2color(Colors.darker(bgColor.get)))
+				case Pressed() => 
+					pressedColor.getOrElse(Colors.hsv2color(Colors.darker(Colors.darker(bgColor.get))))
 				case Clicked() => 
 					resetState
-					clickedColor
+					clickedColor.getOrElse(Colors.hsv2color(Colors.darker(Colors.darker(bgColor.get))))
 			}
 			//if (active && pressed) pressedColor
 			//else if (active) activeColor
 			//else bgColor
 		
-		val (w, h) = size
+		//val (w, h) = size
 		g.setPaint(c)
 		g.fillRect(x, y, w, h)
 		
@@ -149,10 +174,33 @@ class ButtonPiece(val name:String) extends Piece with Publisher with MouseRespon
 			g.drawRect(x, y, w-1, h-1)
 		}*/
 		
+		val (iw, ih) =
+			_icon match {
+				case Some(i) => (i.w, i.h)
+				case None => (0, 0)
+			}
+		
+		if (_icon.nonEmpty)
+			_icon.get.render(g, x+5, y + h/2 - ih/2)
+		
+		g.setFont(font)
 		val fm = g.getFontMetrics()
+		val tw = fm.charsWidth(name.toCharArray, 0, name.length)
+		val th = fm.getHeight()
+		
+		val cx = eastWestAlign match {
+			case WEST => x + kerning + iw + kerning
+			case CENTER => x + w/2 - tw/2
+			case EAST => x + w - kerning - tw
+		}
+		val cy = northSouthAlign match {
+			case NORTH => y + kerning
+			case CENTER => y + h/2 + fm.getAscent - th / 2
+			case SOUTH => y + h - kerning - th
+		}
 		
 		g.setPaint(textColor)
-		g.drawString(name, x + 5, y + fm.getAscent + (h-fm.getHeight-bh) / 2)
+		g.drawString(name, cx, cy)
 	}
 
 }
